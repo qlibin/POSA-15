@@ -52,6 +52,7 @@ public class MainActivity extends LifecycleLoggingActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // Always call super class for necessary
+        super.onCreate(savedInstanceState);
         // initialization/implementation.
         // @@ TODO -- you fill in here.
 

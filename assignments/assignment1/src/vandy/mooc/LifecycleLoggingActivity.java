@@ -55,6 +55,7 @@ public abstract class LifecycleLoggingActivity extends Activity {
     @Override
     protected void onStart(){
         // Always call super class for necessary
+        super.onStart();
         // initialization/implementation.
         // TODO - you fill in here.
     }
@@ -71,6 +72,7 @@ public abstract class LifecycleLoggingActivity extends Activity {
     @Override
     protected void onResume(){
         // Always call super class for necessary
+        super.onResume();
         // initialization/implementation and then log which lifecycle
         // hook method is being called.
         // TODO - you fill in here.
@@ -87,6 +89,7 @@ public abstract class LifecycleLoggingActivity extends Activity {
     @Override
     protected void onPause(){
         // Always call super class for necessary
+        super.onPause();
         // initialization/implementation and then log which lifecycle
         // hook method is being called.
         // TODO - you fill in here.
@@ -100,6 +103,7 @@ public abstract class LifecycleLoggingActivity extends Activity {
     @Override
     protected void onStop(){
         // Always call super class for necessary
+        super.onStop();
         // initialization/implementation and then log which lifecycle
         // hook method is being called.
         // TODO - you fill in here.
@@ -112,6 +116,7 @@ public abstract class LifecycleLoggingActivity extends Activity {
     @Override
     protected void onRestart(){
         // Always call super class for necessary
+        super.onRestart();
         // initialization/implementation and then log which lifecycle
         // hook method is being called.
         // TODO - you fill in here.
@@ -125,6 +130,7 @@ public abstract class LifecycleLoggingActivity extends Activity {
     @Override
     protected void onDestroy(){
         // Always call super class for necessary
+        super.onDestroy();
         // initialization/implementation and then log which lifecycle
         // hook method is being called.
         // TODO - you fill in here.
