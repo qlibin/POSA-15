@@ -110,7 +110,7 @@ public class MainActivity extends LifecycleLoggingActivity {
                 // create an Intent that will launch the "Gallery" app
                 // by passing in the path to the downloaded image
                 // file.
-                Uri imageFileUri = data.getParcelableExtra(DownloadImageActivity.DOWNLOADED_IMAGE_URL);
+                Uri imageFileUri = data.getData();
                 Intent showImageIntent = makeGalleryIntent(imageFileUri.toString());
 
                 // Start the Gallery Activity.
@@ -122,6 +122,10 @@ public class MainActivity extends LifecycleLoggingActivity {
             else if (resultCode == DownloadImageActivity.RESULT_IMAGE_DOWNLOAD_FAILED) {
                 Toast.makeText(this,
                         "Couldn't download an image",
+                        Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(this,
+                        "Unknown error",
                         Toast.LENGTH_LONG).show();
             }
         }
@@ -139,8 +143,6 @@ public class MainActivity extends LifecycleLoggingActivity {
     private Intent makeGalleryIntent(String pathToImageFile) {
         // Create an intent that will start the Gallery app to view
         // the image.
-//        Intent galleryIntent = new Intent(Intent.ACTION_PICK,
-//                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         Intent galleryIntent = new Intent();
         galleryIntent.setAction(Intent.ACTION_VIEW);
         galleryIntent.setDataAndType(Uri.parse("file://" + pathToImageFile), "image/*");
@@ -152,16 +154,14 @@ public class MainActivity extends LifecycleLoggingActivity {
      */
     private Intent makeDownloadImageIntent(Uri url) {
         // Create an intent that will download the image from the web.
-        Intent explicitIntent = new Intent(this, DownloadImageActivity.class);
-        explicitIntent.putExtra(DownloadImageActivity.DOWNLOAD_IMAGE_URL, url);
-        return explicitIntent;
+        return new Intent(Intent.ACTION_WEB_SEARCH, url);
     }
 
     /**
      * Get the URL to download based on user input.
      */
     protected Uri getUrl() {
-        Uri url = null;
+        Uri url;
 
         // Get the text the user typed in the edit text (if anything).
         url = Uri.parse(mUrlEditText.getText().toString());
