@@ -75,18 +75,23 @@ public class MainActivity extends LifecycleLoggingActivity {
             hideKeyboard(this,
                          mUrlEditText.getWindowToken());
 
-            // Call the makeDownloadImageIntent() factory method to
-            // create a new Intent to an Activity that can download an
-            // image from the URL given by the user.  In this case
-            // it's an Intent that's implemented by the
-            // DownloadImageActivity.
-            Intent downloadImageIntent = makeDownloadImageIntent(getUrl());
+            Uri uri = getUrl();
 
-            // Start the Activity associated with the Intent, which
-            // will download the image and then return the Uri for the
-            // downloaded image file via the onActivityResult() hook
-            // method.
-            startActivityForResult(downloadImageIntent, DOWNLOAD_IMAGE_REQUEST);
+            if (uri != null) {
+                // Call the makeDownloadImageIntent() factory method to
+                // create a new Intent to an Activity that can download an
+                // image from the URL given by the user.  In this case
+                // it's an Intent that's implemented by the
+                // DownloadImageActivity.
+                Intent downloadImageIntent = makeDownloadImageIntent(uri);
+
+                // Start the Activity associated with the Intent, which
+                // will download the image and then return the Uri for the
+                // downloaded image file via the onActivityResult() hook
+                // method.
+                startActivityForResult(downloadImageIntent, DOWNLOAD_IMAGE_REQUEST);
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
