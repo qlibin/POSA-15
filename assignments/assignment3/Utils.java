@@ -1,6 +1,7 @@
 package vandy.mooc;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.URL;
@@ -11,22 +12,24 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Images;
 import android.util.Base64;
 import android.util.Log;
+import android.widget.Toast;
 
 /**
  * This helper class encapsulates several static methods that are used
  * to download image files.
  */
-public class DownloadUtils {
+public class Utils {
     /**
      * Used for debugging.
      */
-    private final static String TAG = "DownloadUtils";
+    private final static String TAG = "Utils";
     
     /**
      * If you have access to a stable Internet connection for testing
@@ -46,6 +49,64 @@ public class DownloadUtils {
      * mode.
      */
     static final String OFFLINE_FILENAME = "dougs.jpg";
+    
+    /**
+     * Apply a grayscale filter to the @a imageEntity and return it.
+     */
+    public static Uri grayScaleFilter(Context context,
+                                      Uri pathToImageFile) {
+        Bitmap grayScaleImage = null;
+
+        try (InputStream inputStream = new FileInputStream(pathToImageFile.toString())) {
+            Bitmap originalImage = 
+                BitmapFactory.decodeStream(inputStream);
+
+            // Bail out of we get an invalid bitmap.
+            if (originalImage == null)
+                return null;
+
+            grayScaleImage =
+                originalImage.copy(originalImage.getConfig(),
+                                   true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }  
+
+        boolean hasTransparent = grayScaleImage.hasAlpha();
+        int width = grayScaleImage.getWidth();
+        int height = grayScaleImage.getHeight();
+
+        // A common pixel-by-pixel grayscale conversion algorithm
+        // using values obtained from en.wikipedia.org/wiki/Grayscale.
+        for (int i = 0; i < height; ++i) {
+            for (int j = 0; j < width; ++j) {
+            	
+            	// Check if the pixel is transparent in the original
+            	// by checking if the alpha is 0
+                if (hasTransparent 
+                    && ((grayScaleImage.getPixel(j, i) & 0xff000000) >> 24) == 0) {
+                    continue;
+                }
+                
+                // Convert the pixel to grayscale.
+                int pixel = grayScaleImage.getPixel(j, i);
+                int grayScale = 
+                    (int) (Color.red(pixel) * .299 
+                           + Color.green(pixel) * .587
+                           + Color.blue(pixel) * .114);
+                grayScaleImage.setPixel(j, i, 
+                                     Color.rgb(grayScale, grayScale, grayScale)
+                                     );
+            }
+        }
+
+        return Utils.createDirectoryAndSaveFile
+            (context, 
+             grayScaleImage,
+             // Name of the image file that we're filtering.
+             pathToImageFile.toString());
+    }
     
     /**
      * Download the image located at the provided Internet url using
@@ -89,11 +150,18 @@ public class DownloadUtils {
                 filename = url.toString();
             }
 
-            // Create an output file and save the image into it.
-            return DownloadUtils.createDirectoryAndSaveFile
-                (context, 
-                 inputStream,
-                 filename);
+            // Decode the InputStream into a Bitmap image.
+            Bitmap bitmap =
+                BitmapFactory.decodeStream(inputStream);
+
+            // Bail out of we get an invalid bitmap.
+            if (bitmap == null)
+                return null;
+            else
+                // Create an output file and save the image into it.
+                return Utils.createDirectoryAndSaveFile(context, 
+                                                        bitmap,
+                                                        filename);
         } catch (Exception e) {
             Log.e(TAG, "Exception while downloading. Returning null.");
             Log.e(TAG, e.toString());
@@ -107,21 +175,14 @@ public class DownloadUtils {
      * the device.
      *
      * @param context	   the context in which to write the file.
-     * @param inputStream  the Input Stream.
+     * @param image        the image to save
      * @param fileName     name of the file.
      * 
      * @return          the absolute path to the downloaded image file on the file system.
      */
     private static Uri createDirectoryAndSaveFile(Context context,
-                                                  InputStream inputStream,
+                                                  Bitmap image,
                                                   String fileName) {
-        // Decode the InputStream into a Bitmap image.
-        Bitmap imageToSave =
-            BitmapFactory.decodeStream(inputStream);
-
-        if (imageToSave == null)
-            return null;
-
         File directory =
             new File(Environment.getExternalStoragePublicDirectory
                      (Environment.DIRECTORY_DCIM)
@@ -137,17 +198,16 @@ public class DownloadUtils {
                              getTemporaryFilename(fileName));
         if (file.exists())
             file.delete();
-        try {
-            FileOutputStream outputStream =
-                new FileOutputStream(file);
-            imageToSave.compress(Bitmap.CompressFormat.JPEG,
-                                 100,
-                                 outputStream);
+
+        try (FileOutputStream outputStream = new FileOutputStream(file)) {
+            image.compress(Bitmap.CompressFormat.JPEG,
+                           100,
+                           outputStream);
             outputStream.flush();
-            outputStream.close();
-            inputStream.close();
         } catch (Exception e) {
             e.printStackTrace();
+            // Indicate a failure.
+            return null;
         }
 
         // Get the absolute path of the image.
@@ -209,5 +269,15 @@ public class DownloadUtils {
         //                              + System.currentTimeMillis());
         return Base64.encodeToString(url.getBytes(),
                                      Base64.NO_WRAP);
+    }
+
+    /**
+     * Show a toast message.
+     */
+    public static void showToast(Context context,
+                                 String message) {
+        Toast.makeText(context,
+                       message,
+                       Toast.LENGTH_SHORT).show();
     }
 }
